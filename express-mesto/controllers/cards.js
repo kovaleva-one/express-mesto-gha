@@ -5,31 +5,31 @@ const getCards = (req, res) => {
     .populate('owner')
     .then((cards) => res.status(200).send(cards))
     .catch(() => res.status(500).send({
-      message: 'Ошибка сервера!'
+      message: 'Ошибка сервера!',
     }));
 };
 const postCard = (req, res) => {
   const {
     name,
-    link
+    link,
   } = req.body;
   const {
-    _id
+    _id,
   } = req.user;
   CardModel.create({
-      name,
-      link,
-      owner: _id
-    })
-    .then((card) => res.status(200).send(card))
+    name,
+    link,
+    owner: _id,
+  })
+    .then((card) => res.status(201).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({
-          message: 'Переданы некорректные данные!'
+          message: 'Переданы некорректные данные!',
         });
       } else {
         res.status(500).send({
-          message: 'Ошибка сервера!'
+          message: 'Ошибка сервера!',
         });
       }
     });
@@ -37,7 +37,7 @@ const postCard = (req, res) => {
 
 const deleteCard = (req, res) => {
   const {
-    cardId
+    cardId,
   } = req.params;
   CardModel.findByIdAndRemove(cardId, req.body)
     .populate('owner')
@@ -52,15 +52,15 @@ const deleteCard = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(400).send({
-          message: 'Переданы некорректные данные!'
+          message: 'Переданы некорректные данные!',
         });
       } else if (err.statusCode === 404) {
         res.status(404).send({
-          message: 'Карточка с данным id не найдена'
+          message: 'Карточка с данным id не найдена',
         });
       } else {
         res.status(500).send({
-          message: 'Ошибка сервера!'
+          message: 'Ошибка сервера!',
         });
       }
     });
@@ -68,18 +68,18 @@ const deleteCard = (req, res) => {
 
 const putLike = (req, res) => {
   const {
-    cardId
+    cardId,
   } = req.params;
   const {
-    _id
+    _id,
   } = req.user;
   CardModel.findByIdAndUpdate(cardId, {
-      $addToSet: {
-        likes: _id,
-      },
-    }, {
-      new: true,
-    })
+    $addToSet: {
+      likes: _id,
+    },
+  }, {
+    new: true,
+  })
     .populate(['likes', 'owner'])
     .orFail(() => {
       const err = new Error('Карточка не найдена!');
@@ -92,15 +92,15 @@ const putLike = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(400).send({
-          message: 'Переданы некорректные данные!'
+          message: 'Переданы некорректные данные!',
         });
       } else if (err.statusCode === 404) {
         res.status(404).send({
-          message: 'Карточка с данным id не найдена'
+          message: 'Карточка с данным id не найдена',
         });
       } else {
         res.status(500).send({
-          message: 'Ошибка сервера!'
+          message: 'Ошибка сервера!',
         });
       }
     });
@@ -108,18 +108,18 @@ const putLike = (req, res) => {
 
 const deleteLike = (req, res) => {
   const {
-    cardId
+    cardId,
   } = req.params;
   const {
-    _id
+    _id,
   } = req.user;
   CardModel.findByIdAndUpdate(cardId, {
-      $pull: {
-        likes: _id,
-      },
-    }, {
-      new: true,
-    })
+    $pull: {
+      likes: _id,
+    },
+  }, {
+    new: true,
+  })
     .populate(['likes', 'owner'])
     .orFail(() => {
       const err = new Error('Карточка не найдена!');
@@ -132,22 +132,22 @@ const deleteLike = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(400).send({
-          message: 'Переданы некорректные данные!'
+          message: 'Переданы некорректные данные!',
         });
       } else if (err.statusCode === 404) {
         res.status(404).send({
-          message: 'Карточка с данным id не найдена'
+          message: 'Карточка с данным id не найдена',
         });
       } else {
         res.status(500).send({
-          message: 'Ошибка сервера!'
+          message: 'Ошибка сервера!',
         });
       }
     });
 };
 
 const getError = (req, res) => res.status(404).send({
-  message: 'Запрашиваемый ресурс не найден'
+  message: 'Запрашиваемый ресурс не найден',
 });
 
 module.exports = {

@@ -4,13 +4,13 @@ const getUsers = (req, res) => {
   UserModel.find({})
     .then((users) => res.status(200).send(users))
     .catch(() => res.status(500).send({
-      message: 'Ошибка сервера!'
+      message: 'Ошибка сервера!',
     }));
 };
 
 const getProfile = (req, res) => {
   const {
-    userId
+    userId,
   } = req.params;
   UserModel.findById(userId)
     .orFail(() => {
@@ -22,17 +22,18 @@ const getProfile = (req, res) => {
       res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.kind === 'ObjectId') {
+      // eslint-disable-next-line eqeqeq
+      if (err.name == 'CastError') {
         res.status(400).send({
-          message: 'Переданы некорректные данные!'
+          message: 'Переданы некорректные данные!',
         });
       } else if (err.statusCode === 404) {
         res.status(404).send({
-          message: 'Пользователь с данным id не найден'
+          message: err.message,
         });
       } else {
         res.status(500).send({
-          message: 'Ошибка сервера!'
+          message: 'Ошибка сервера!',
         });
       }
     });
@@ -42,24 +43,24 @@ const createProfile = (req, res) => {
   const {
     name,
     about,
-    avatar
+    avatar,
   } = req.body;
   UserModel.create({
-      name,
-      about,
-      avatar
-    })
+    name,
+    about,
+    avatar,
+  })
     .then((user) => {
-      res.status(200).send(user);
+      res.status(201).send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({
-          message: 'Переданы некорректные данные!'
+          message: 'Переданы некорректные данные!',
         });
       } else {
         res.status(500).send({
-          message: 'Ошибка сервера!'
+          message: 'Ошибка сервера!',
         });
       }
     });
@@ -67,21 +68,21 @@ const createProfile = (req, res) => {
 
 const updateProfile = (req, res) => {
   const {
-    _id
+    _id,
   } = req.user;
   const {
     name,
-    about
+    about,
   } = req.body;
   UserModel.findByIdAndUpdate({
-      _id
-    }, {
-      name,
-      about
-    }, {
-      runValidators: true,
-      new: true,
-    })
+    _id,
+  }, {
+    name,
+    about,
+  }, {
+    runValidators: true,
+    new: true,
+  })
     .orFail(() => {
       const err = new Error('Профайл не найден!');
       err.statusCode = 404;
@@ -93,15 +94,15 @@ const updateProfile = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         res.status(400).send({
-          message: 'Переданы некорректные данные!'
+          message: 'Переданы некорректные данные!',
         });
       } else if (err.statusCode === 404) {
         res.status(404).send({
-          message: 'Пользователь с данным id не найден'
+          message: 'Пользователь с данным id не найден',
         });
       } else {
         res.status(500).send({
-          message: 'Ошибка сервера!'
+          message: 'Ошибка сервера!',
         });
       }
     });
@@ -109,19 +110,19 @@ const updateProfile = (req, res) => {
 
 const updateAvatar = (req, res) => {
   const {
-    _id
+    _id,
   } = req.user;
   const {
-    avatar
+    avatar,
   } = req.body;
   UserModel.findByIdAndUpdate({
-      _id
-    }, {
-      avatar
-    }, {
-      runValidators: true,
-      new: true,
-    })
+    _id,
+  }, {
+    avatar,
+  }, {
+    runValidators: true,
+    new: true,
+  })
     .orFail(() => {
       const err = new Error('Профайл не найден!');
       err.statusCode = 404;
@@ -133,15 +134,15 @@ const updateAvatar = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({
-          message: 'Переданы некорректные данные!'
+          message: 'Переданы некорректные данные!',
         });
       } else if (err.statusCode === 404) {
         res.status(404).send({
-          message: 'Пользователь с данным id не найден'
+          message: 'Пользователь с данным id не найден',
         });
       } else {
         res.status(500).send({
-          message: 'Ошибка сервера!'
+          message: 'Ошибка сервера!',
         });
       }
     });
