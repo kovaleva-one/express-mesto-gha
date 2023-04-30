@@ -1,157 +1,56 @@
-const UserModel = require('../models/user');
+const Card = require('../models/card');
+const HttpError = require('../utils/HttpError');
 
-const getUsers = (req, res) => {
-  UserModel.find({})
-    .then((users) => res.status(200).send(users))
-    .catch(() => res.status(500).send({
-      message: 'Ошибка сервера!',
-    }));
+module.exports.getCards = (req, res, next) => {
+  Card.find({})
+    .populate(['owner', 'likes'])
+    .then((cards) => res.send(cards))
+    .catch(next);
 };
 
-const getProfile = (req, res) => {
-  const {
-    userId,
-  } = req.params;
-  UserModel.findById(userId)
-    .orFail(() => {
-      const err = new Error('Профайл не найден!');
-      err.statusCode = 404;
-      throw err;
-    })
-    .then((user) => {
-      res.status(200).send(user);
-    })
-    .catch((err) => {
-      // eslint-disable-next-line eqeqeq
-      if (err.name == 'CastError') {
-        res.status(400).send({
-          message: 'Переданы некорректные данные!',
-        });
-      } else if (err.statusCode === 404) {
-        res.status(404).send({
-          message: err.message,
-        });
+module.exports.createCard = (req, res, next) => {
+  const { name, link } = req.body;
+  Card.create({ name, link, owner: req.user._id })
+    .then((card) => res.send(card))
+    .catch(next);
+};
+
+module.exports.deleteCard = (req, res, next) => {
+  Card.findById(req.params.cardId)
+    .orFail(new HttpError(404, 'idError', 'Карточка по указанному id не найдена'))
+    .then((card) => {
+      if (card.owner.toString() === req.user._id.toString()) {
+        Card.findByIdAndRemove(req.params.cardId)
+          .populate(['owner', 'likes'])
+          .then((delCard) => res.send(delCard))
+          .catch(next);
       } else {
-        res.status(500).send({
-          message: 'Ошибка сервера!',
-        });
+        throw new HttpError(403, 'forbiddenError', 'Нет прав для удаления');
       }
-    });
+    })
+    .catch(next);
 };
 
-const createProfile = (req, res) => {
-  const {
-    name,
-    about,
-    avatar,
-  } = req.body;
-  UserModel.create({
-    name,
-    about,
-    avatar,
-  })
-    .then((user) => {
-      res.status(201).send(user);
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({
-          message: 'Переданы некорректные данные!',
-        });
-      } else {
-        res.status(500).send({
-          message: 'Ошибка сервера!',
-        });
-      }
-    });
+module.exports.likeCard = (req, res, next) => {
+  Card.findByIdAndUpdate(
+    req.params.cardId,
+    { $addToSet: { likes: req.user._id } },
+    { new: true },
+  )
+    .orFail(new HttpError(404, 'idError', 'Карточка по указанному id не найдена'))
+    .populate(['owner', 'likes'])
+    .then((card) => res.send(card))
+    .catch(next);
 };
 
-const updateProfile = (req, res) => {
-  const {
-    _id,
-  } = req.user;
-  const {
-    name,
-    about,
-  } = req.body;
-  UserModel.findByIdAndUpdate({
-    _id,
-  }, {
-    name,
-    about,
-  }, {
-    runValidators: true,
-    new: true,
-  })
-    .orFail(() => {
-      const err = new Error('Профайл не найден!');
-      err.statusCode = 404;
-      throw err;
-    })
-    .then((user) => {
-      res.status(200).send(user);
-    })
-    .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
-        res.status(400).send({
-          message: 'Переданы некорректные данные!',
-        });
-      } else if (err.statusCode === 404) {
-        res.status(404).send({
-          message: 'Пользователь с данным id не найден',
-        });
-      } else {
-        res.status(500).send({
-          message: 'Ошибка сервера!',
-        });
-      }
-    });
-};
-
-const updateAvatar = (req, res) => {
-  const {
-    _id,
-  } = req.user;
-  const {
-    avatar,
-  } = req.body;
-  UserModel.findByIdAndUpdate({
-    _id,
-  }, {
-    avatar,
-  }, {
-    runValidators: true,
-    new: true,
-  })
-    .orFail(() => {
-      const err = new Error('Профайл не найден!');
-      err.statusCode = 404;
-      throw err;
-    })
-    .then((user) => {
-      res.status(200).send(user);
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({
-          message: 'Переданы некорректные данные!',
-        });
-      } else if (err.statusCode === 404) {
-        res.status(404).send({
-          message: 'Пользователь с данным id не найден',
-        });
-      } else {
-        res.status(500).send({
-          message: 'Ошибка сервера!',
-        });
-      }
-    });
-};
-
-module.exports = {
-  getUsers,
-  getProfile,
-  updateProfile,
-  updateAvatar,
-  createProfile,
+module.exports.dislikeCard = (req, res, next) => {
+  Card.findByIdAndUpdate(
+    req.params.cardId,
+    { $pull: { likes: req.user._id } },
+    { new: true },
+  )
+    .orFail(new HttpError(404, 'idError', 'Карточка по указанному id не найдена'))
+    .populate(['owner', 'likes'])
+    .then((card) => res.send(card))
+    .catch(next);
 };
