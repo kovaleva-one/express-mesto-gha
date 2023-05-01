@@ -1,7 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-// eslint-disable-next-line import/no-unresolved
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 // eslint-disable-next-line import/no-unresolved
