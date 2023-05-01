@@ -1,69 +1,76 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
-const helmet = require('helmet');
-const cookieParser = require('cookie-parser');
-// eslint-disable-next-line import/no-unresolved
-const { celebrate, Joi, errors } = require('celebrate');
-const HttpError = require('./utils/HttpError.js');
+import express from 'express';
+import mongoose from 'mongoose';
+import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
+import { celebrate, errors, Joi } from 'celebrate';
+import usersRouter from './routes/user.js';
+import cardRouter from './routes/card.js';
+import { createUser, login } from './controllers/user.js';
+import auth from './middlewares/auth.js';
+import NotFoundError from './errors/NotFoundError.js';
+import centralizedError from './middlewares/centralizedError.js';
+import urlRegex from './utils/constants.js';
+import { errorLogger, requestLogger } from './middlewares/logger.js';
 
 const { PORT = 3000 } = process.env;
 
 const app = express();
 
-const { requestLogger, errorLogger } = require('./middlewares/logger');
-const { createUser, login } = require('./controllers/users');
-const auth = require('./middlewares/auth');
-const users = require('./routes/users');
-const cards = require('./routes/cards');
-
-app.use(helmet());
-app.disable('x-powered-by');
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-
-mongoose.connect('mongodb://localhost:27017/mestodb');
+mongoose.connect('mongodb://localhost:27017/mestodb')
+  .catch((err) => {
+    // eslint-disable-next-line no-console
+    console.log(`Connection to database was failed with error ${err}`);
+  });
 
 app.use(requestLogger);
 
 app.post('/signin', celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().email().required(),
-    password: Joi.string().required().min(8),
-  }),
+  body: Joi.object()
+    .keys({
+      email: Joi.string()
+        .email()
+        .required(),
+      password: Joi.string()
+        .required(),
+    }),
 }), login);
 
 app.post('/signup', celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().email().required(),
-    password: Joi.string().required(),
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-    avatar: Joi.string().pattern(/^(https?:\/\/(www\.)?)[\w\-._~:/?#[\]@!$&'()*+,;]+\.[\w\-._~:/?#[\]@!$&'()*+,;]+#?$/),
-  }),
+  body: Joi.object()
+    .keys({
+      email: Joi.string()
+        .required()
+        .email(),
+      password: Joi.string()
+        .required(),
+      name: Joi.string()
+        .min(2)
+        .max(30),
+      about: Joi.string()
+        .min(2)
+        .max(30),
+      avatar: Joi.string()
+        .regex(urlRegex)
+        .uri({ scheme: ['http', 'https'] }),
+    }),
 }), createUser);
 
 app.use(auth);
-
-app.use('/users', users);
-app.use('/cards', cards);
-
-// eslint-disable-next-line no-unused-vars
-app.get('*', (req, res) => {
-  throw new HttpError(404, 'notFoundError', 'Запрашиваемый ресурс не найден');
+app.use('/users', usersRouter);
+app.use('/cards', cardRouter);
+app.all('*', (req, res, next) => {
+  next(new NotFoundError('Запрашиваемый маршрут не найден'));
 });
 
 app.use(errorLogger);
 
 app.use(errors());
-// eslint-disable-next-line no-unused-vars
-app.use((err, req, res, next) => {
-  const { code = 500, message } = err;
-  res.status(code).send({ message: code === 500 ? 'Ошибка сервера' : message });
-});
+
+app.use(centralizedError);
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
-  console.log(`App listening on port ${PORT}`);
+  console.log(`App listen on PORT ${PORT}`);
 });
