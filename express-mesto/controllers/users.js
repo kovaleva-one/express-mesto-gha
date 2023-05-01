@@ -1,56 +1,84 @@
-const Card = require('../models/card');
+// eslint-disable-next-line import/no-unresolved
+const bcrypt = require('bcryptjs');
+// eslint-disable-next-line import/no-unresolved
+const jwt = require('jsonwebtoken');
+const User = require('../models/user');
 const HttpError = require('../utils/HttpError');
 
-module.exports.getCards = (req, res, next) => {
-  Card.find({})
-    .populate(['owner', 'likes'])
-    .then((cards) => res.send(cards))
+module.exports.getUsers = (req, res, next) => {
+  User.find({})
+    .then((users) => res.send(users))
     .catch(next);
 };
 
-module.exports.createCard = (req, res, next) => {
-  const { name, link } = req.body;
-  Card.create({ name, link, owner: req.user._id })
-    .then((card) => res.send(card))
+module.exports.getUserById = (req, res, next) => {
+  User.findOne({ _id: req.params.userId })
+    .orFail(new HttpError(404, 'idError', 'Пользователь по указанному id не найден'))
+    .then((user) => res.send(user))
     .catch(next);
 };
 
-module.exports.deleteCard = (req, res, next) => {
-  Card.findById(req.params.cardId)
-    .orFail(new HttpError(404, 'idError', 'Карточка по указанному id не найдена'))
-    .then((card) => {
-      if (card.owner.toString() === req.user._id.toString()) {
-        Card.findByIdAndRemove(req.params.cardId)
-          .populate(['owner', 'likes'])
-          .then((delCard) => res.send(delCard))
-          .catch(next);
-      } else {
-        throw new HttpError(403, 'forbiddenError', 'Нет прав для удаления');
-      }
+module.exports.getCurrentUser = (req, res, next) => {
+  User.findById(req.user._id)
+    .orFail(new HttpError(404, 'idError', 'Пользователь по указанному id не найден'))
+    .then((user) => res.send(user))
+    .catch(next);
+};
+
+module.exports.createUser = (req, res, next) => {
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      email, password: hash, name, about, avatar,
     })
+      .then((user) => res.send({
+        email: user.email,
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+      }))
+      .catch((err) => {
+        if (err.name === 'MongoServerError' && err.code === 11000) {
+          next(new HttpError(409, 'ConflictError', 'Пользоватьель с таким email уже существует'));
+        } else {
+          next(new HttpError(400, 'ValidationError', 'Переданы некорректные данные при создании пользователя'));
+        }
+      }))
     .catch(next);
 };
 
-module.exports.likeCard = (req, res, next) => {
-  Card.findByIdAndUpdate(
-    req.params.cardId,
-    { $addToSet: { likes: req.user._id } },
-    { new: true },
-  )
-    .orFail(new HttpError(404, 'idError', 'Карточка по указанному id не найдена'))
-    .populate(['owner', 'likes'])
-    .then((card) => res.send(card))
+module.exports.updateUser = (req, res, next) => {
+  const { name, about } = req.body;
+  User.findByIdAndUpdate(req.user._id, { name, about }, {
+    new: true,
+    runValidators: true,
+    upsert: false,
+  })
+    .orFail(new HttpError(404, 'idError', 'Пользователь по указанному id не найден'))
+    .then((user) => res.send(user))
     .catch(next);
 };
 
-module.exports.dislikeCard = (req, res, next) => {
-  Card.findByIdAndUpdate(
-    req.params.cardId,
-    { $pull: { likes: req.user._id } },
-    { new: true },
-  )
-    .orFail(new HttpError(404, 'idError', 'Карточка по указанному id не найдена'))
-    .populate(['owner', 'likes'])
-    .then((card) => res.send(card))
+module.exports.updateAvatar = (req, res, next) => {
+  const { avatar } = req.body;
+  User.findByIdAndUpdate(req.user._id, { avatar }, {
+    new: true,
+    runValidators: true,
+    upsert: false,
+  })
+    .orFail(new HttpError(404, 'idError', 'Пользователь по указанному id не найден'))
+    .then((user) => res.send(user))
+    .catch(next);
+};
+
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'dev-secret', { expiresIn: '7d' });
+      res.cookie('jwt', token, { httpOnly: true }).send({ message: 'Авторизация прошла успешно' });
+    })
     .catch(next);
 };
