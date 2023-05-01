@@ -1,23 +1,16 @@
-/* eslint-disable import/no-unresolved */
-// eslint-disable-next-line import/no-unresolved
-const winston = require('winston');
-const expressWinston = require('express-winston');
+import winston from 'winston';
+import * as expressWinston from 'express-winston';
 
-const requestLogger = expressWinston.logger({
+export const requestLogger = expressWinston.logger({
   transports: [
-    new winston.transports.File({ filename: 'request.log' }),
+    new winston.transports.File({ filename: 'request.log.' }),
   ],
   format: winston.format.json(),
 });
 
-const errorLogger = expressWinston.errorLogger({
+export const errorLogger = expressWinston.errorLogger({
   transports: [
     new winston.transports.File({ filename: 'error.log' }),
   ],
   format: winston.format.json(),
 });
-
-module.exports = {
-  requestLogger,
-  errorLogger,
-};
