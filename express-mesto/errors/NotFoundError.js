@@ -3,9 +3,8 @@ import HTTPError from './HTTPError.js';
 
 class NotFoundError extends HTTPError {
   constructor(message) {
-    super(message);
+    super(message, constants.HTTP_STATUS_NOT_FOUND);
     this.name = 'NotFoundError';
-    this.statusCode = constants.HTTP_STATUS_NOT_FOUND;
   }
 }
 

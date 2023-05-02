@@ -3,9 +3,8 @@ import HTTPError from './HTTPError.js';
 
 class ConflictError extends HTTPError {
   constructor(message) {
-    super(message);
+    super(message, constants.HTTP_STATUS_CONFLICT);
     this.name = 'ConflictError';
-    this.statusCode = constants.HTTP_STATUS_CONFLICT;
   }
 }
 

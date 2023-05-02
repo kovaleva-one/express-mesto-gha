@@ -3,9 +3,8 @@ import HTTPError from './HTTPError.js';
 
 class UnauthorizedError extends HTTPError {
   constructor(message) {
-    super(message);
+    super(message, constants.HTTP_STATUS_UNAUTHORIZED);
     this.name = 'UnauthorizedError';
-    this.statusCode = constants.HTTP_STATUS_UNAUTHORIZED;
   }
 }
 

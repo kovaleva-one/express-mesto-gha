@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
-import UnauthorizedError from '../errors/UnauthorizedError.js';
+// import UnauthorizedError from '../errors/UnauthorizedError.js';
 import NotFoundError from '../errors/NotFoundError.js';
 import BadRequestError from '../errors/BadRequestError.js';
 import ConflictError from '../errors/ConflictError.js';
@@ -147,7 +147,5 @@ export function login(req, res, next) {
       });
       res.send({ token });
     })
-    .catch(() => {
-      next(new UnauthorizedError('Передан неверный логин или пароль'));
-    });
+    .catch(() => next());
 }

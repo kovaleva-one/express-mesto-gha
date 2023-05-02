@@ -3,9 +3,8 @@ import HTTPError from './HTTPError.js';
 
 class ForbiddenError extends HTTPError {
   constructor(message) {
-    super(message);
+    super(message, constants.HTTP_STATUS_FORBIDDEN);
     this.name = 'ForbiddenError';
-    this.statusCode = constants.HTTP_STATUS_FORBIDDEN;
   }
 }
 

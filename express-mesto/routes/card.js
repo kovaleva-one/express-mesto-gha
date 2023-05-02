@@ -31,7 +31,7 @@ cardRouter.post('/', celebrate({
       link: Joi.string()
         .required()
         .regex(urlRegex)
-        .uri({ scheme: ['http', 'https'] }),
+        .uri(),
     }),
 }), createCard);
 cardRouter.put('/:cardId/likes', celebrate({
