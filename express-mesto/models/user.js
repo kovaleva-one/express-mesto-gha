@@ -2,7 +2,8 @@ import mongoose from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
 import UnauthorizedError from '../errors/UnauthorizedError.js';
-import urlRegex from '../utils/constants.js';
+
+const urlRegex = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-./?%&=]*)?$/;
 
 const userSchema = new mongoose.Schema({
   email: {

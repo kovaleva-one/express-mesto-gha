@@ -8,7 +8,6 @@ import {
   getAllCards,
   likeCard,
 } from '../controllers/card.js';
-import urlRegex from '../utils/constants.js';
 
 const cardRouter = Router();
 
@@ -30,7 +29,7 @@ cardRouter.post('/', celebrate({
         .max(30),
       link: Joi.string()
         .required()
-        .regex(urlRegex)
+        .regex(/^(http[s]?|ftp):\/\/?([w]{3}\.)?[a-z0-9\-.]+\.[a-z]{2,}(\/.*)?$/)
         .uri(),
     }),
 }), createCard);

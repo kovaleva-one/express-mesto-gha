@@ -147,5 +147,5 @@ export function login(req, res, next) {
       });
       res.send({ token });
     })
-    .catch(() => next());
+    .catch((err) => next(err));
 }
