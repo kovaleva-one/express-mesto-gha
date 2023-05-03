@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
-// eslint-disable-next-line import/named
-import { URL_REGEX } from '../utils/constants.js';
+import urlRegex from '../utils/constants.js';
 
 const cardSchema = new mongoose.Schema({
   name: {
@@ -13,7 +12,7 @@ const cardSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Поле ссылки на картинку не заполнено!'],
     validate: {
-      validator: (url) => URL_REGEX.test(url),
+      validator: (url) => urlRegex.test(url),
       message: 'В поле ссылка на картинку [{VALUE}] не является ссылкой!',
     },
   },
