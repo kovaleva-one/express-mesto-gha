@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
-import urlRegex from '../utils/constants.js';
+
+const validator = require('validator');
 
 const cardSchema = new mongoose.Schema({
   name: {
@@ -12,7 +13,7 @@ const cardSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Поле ссылки на картинку не заполнено!'],
     validate: {
-      validator: (url) => urlRegex.test(url),
+      validator: (link) => validator.isURL(link),
       message: 'В поле ссылка на картинку [{VALUE}] не является ссылкой!',
     },
   },
