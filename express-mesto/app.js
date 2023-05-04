@@ -3,14 +3,14 @@ import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { celebrate, errors, Joi } from 'celebrate';
-import usersRouter from './routes/user.js';
-import cardRouter from './routes/card.js';
-import { createUser, login } from './controllers/user.js';
-import auth from './middlewares/auth.js';
-import NotFoundError from './errors/NotFoundError.js';
-import centralizedError from './middlewares/centralizedError.js';
-import urlRegex from './utils/constants.js';
-import { errorLogger, requestLogger } from './middlewares/logger.js';
+import usersRouter from './routes/user';
+import cardRouter from './routes/card';
+import { createUser, login } from './controllers/user';
+import auth from './middlewares/auth';
+import NotFoundError from './errors/NotFoundError';
+import centralizedError from './middlewares/centralizedError';
+import urlRegex from './utils/constants';
+import { errorLogger, requestLogger } from './middlewares/logger';
 
 const { PORT = 3000 } = process.env;
 

@@ -7,7 +7,7 @@ import {
   getUsers,
   updateUserAvatar,
   updateUserInfo,
-} from '../controllers/user.js';
+} from '../controllers/user';
 
 const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
 

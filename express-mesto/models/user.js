@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
-import UnauthorizedError from '../errors/UnauthorizedError.js';
+import UnauthorizedError from '../errors/UnauthorizedError';
 
 const urlRegex = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-./?%&=]*)?$/;
 

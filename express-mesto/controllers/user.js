@@ -3,9 +3,9 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
 // import UnauthorizedError from '../errors/UnauthorizedError.js';
-import NotFoundError from '../errors/NotFoundError.js';
-import BadRequestError from '../errors/BadRequestError.js';
-import ConflictError from '../errors/ConflictError.js';
+import NotFoundError from '../errors/NotFoundError';
+import BadRequestError from '../errors/BadRequestError';
+import ConflictError from '../errors/ConflictError';
 
 dotenv.config();
 

@@ -7,7 +7,7 @@ import {
   dislikeCard,
   getAllCards,
   likeCard,
-} from '../controllers/card.js';
+} from '../controllers/card';
 
 const cardRouter = Router();
 
