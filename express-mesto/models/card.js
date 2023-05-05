@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const validator = require('validator');
 
@@ -35,4 +35,4 @@ const cardSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.model('card', cardSchema);
+module.exports = mongoose.model('card', cardSchema);

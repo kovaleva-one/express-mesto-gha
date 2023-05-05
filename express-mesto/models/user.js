@@ -1,7 +1,7 @@
-import mongoose from 'mongoose';
-import validator from 'validator';
-import bcrypt from 'bcryptjs';
-import UnauthorizedError from '../errors/UnauthorizedError';
+const mongoose = require('mongoose');
+const validator = require('validator');
+const bcrypt = require('bcryptjs');
+const UnauthorizedError = require('../errors/UnauthorizedError');
 
 const urlRegex = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-./?%&=]*)?$/;
 
@@ -60,4 +60,4 @@ userSchema.statics.findUserByCredentials = function findUserByCredentials(email,
       throw new UnauthorizedError('Указаны некорректные почта или пароль!');
     });
 };
-export default mongoose.model('user', userSchema);
+module.exports = mongoose.model('user', userSchema);

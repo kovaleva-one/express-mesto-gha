@@ -1,13 +1,8 @@
-import { Router } from 'express';
-import { celebrate, Joi } from 'celebrate';
-
-import {
-  getMe,
-  getUserById,
-  getUsers,
-  updateUserAvatar,
-  updateUserInfo,
-} from '../controllers/user';
+const Router = require('express');
+const { celebrate, Joi } = require('celebrate');
+const {
+  getMe, getUserById, getUsers, updateUserAvatar, updateUserInfo,
+} = require('../controllers/user');
 
 const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
 
@@ -34,4 +29,4 @@ usersRouter.patch('/me/avatar', celebrate({
   }),
 }), updateUserAvatar);
 
-export default usersRouter;
+module.exports = usersRouter;

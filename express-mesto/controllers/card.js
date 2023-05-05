@@ -1,16 +1,18 @@
-import Card from '../models/card';
-import NotFoundError from '../errors/NotFoundError';
-import ForbiddenError from '../errors/ForbiddenError';
-import BadRequestError from '../errors/BadRequestError';
+const Card = require('../models/card');
+const NotFoundError = require('../errors/NotFoundError');
+const ForbiddenError = require('../errors/ForbiddenError');
+const BadRequestError = require('../errors/BadRequestError');
 
-export function getAllCards(req, res, next) {
+function getAllCards(req, res, next) {
   Card.find({})
     .populate(['owner', 'likes'])
     .then((cards) => res.send(cards))
     .catch((err) => next(err));
 }
 
-export function createCard(req, res, next) {
+module.exports = getAllCards;
+
+function createCard(req, res, next) {
   const {
     name,
     link,
@@ -31,7 +33,9 @@ export function createCard(req, res, next) {
     });
 }
 
-export function deleteCard(req, res, next) {
+module.exports = createCard;
+
+function deleteCard(req, res, next) {
   Card.findById(req.params.cardId)
     .then((card) => {
       if (!card) {
@@ -56,7 +60,9 @@ export function deleteCard(req, res, next) {
     });
 }
 
-export function likeCard(req, res, next) {
+module.exports = deleteCard;
+
+function likeCard(req, res, next) {
   Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
     .populate(['owner', 'likes'])
     .then((card) => {
@@ -75,7 +81,9 @@ export function likeCard(req, res, next) {
     });
 }
 
-export function dislikeCard(req, res, next) {
+module.exports = likeCard;
+
+function dislikeCard(req, res, next) {
   Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
     .populate(['owner', 'likes'])
     .then((card) => {
@@ -93,3 +101,5 @@ export function dislikeCard(req, res, next) {
       }
     });
 }
+
+module.exports = dislikeCard;

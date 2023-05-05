@@ -1,13 +1,12 @@
-import { Router } from 'express';
-
-import { celebrate, Joi } from 'celebrate';
-import {
+const { Router } = require('express');
+const { celebrate, Joi } = require('celebrate');
+const {
   createCard,
   deleteCard,
   dislikeCard,
   getAllCards,
   likeCard,
-} from '../controllers/card';
+} = require('../controllers/card');
 
 const cardRouter = Router();
 
@@ -50,4 +49,4 @@ cardRouter.delete('/:cardId/likes', celebrate({
   }),
 }), dislikeCard);
 
-export default cardRouter;
+module.exports = cardRouter;

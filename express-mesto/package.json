@@ -1,7 +1,6 @@
 {
     "name": "express-mesto",
     "version": "1.0.0",
-    "type": "module",
     "engines": {
         "node": ">=14.15.0"
     },
@@ -31,6 +30,7 @@
         "http2": "^3.3.7",
         "jsonwebtoken": "^9.0.0",
         "mongoose": "^6.11.0",
+        "requirejs": "^2.3.6",
         "validator": "^13.9.0",
         "winston": "^3.8.2"
     },

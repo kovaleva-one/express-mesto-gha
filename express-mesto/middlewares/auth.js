@@ -1,5 +1,5 @@
-import jwt from 'jsonwebtoken';
-import UnauthorizedError from '../errors/UnauthorizedError';
+const jwt = require('jsonwebtoken');
+const UnauthorizedError = require('../errors/UnauthorizedError');
 
 const {
   NODE_ENV,
@@ -25,4 +25,4 @@ function auth(req, res, next) {
   }
 }
 
-export default auth;
+module.exports = auth;

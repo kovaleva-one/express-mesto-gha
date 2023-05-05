@@ -1,11 +1,10 @@
-import dotenv from 'dotenv';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import User from '../models/user.js';
-// import UnauthorizedError from '../errors/UnauthorizedError.js';
-import NotFoundError from '../errors/NotFoundError';
-import BadRequestError from '../errors/BadRequestError';
-import ConflictError from '../errors/ConflictError';
+const dotenv = require('dotenv');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const User = require('../models/user.js');
+const NotFoundError = require('../errors/NotFoundError');
+const BadRequestError = require('../errors/BadRequestError');
+const ConflictError = require('../errors/ConflictError');
 
 dotenv.config();
 
@@ -14,11 +13,13 @@ const {
   JWT_SECRET,
 } = process.env;
 
-export function getUsers(req, res, next) {
+function getUsers(req, res, next) {
   User.find({})
     .then((users) => res.send(users))
     .catch((err) => next(err));
 }
+
+module.exports = { getUsers };
 
 function findUserById(id, res, next) {
   User.findById(id)
@@ -38,15 +39,23 @@ function findUserById(id, res, next) {
     });
 }
 
-export function getUserById(req, res, next) {
+function getUserById(req, res, next) {
   findUserById(req.params.userId, res, next);
 }
 
-export function getMe(req, res, next) {
+module.exports = {
+  getUserById,
+};
+
+function getMe(req, res, next) {
   findUserById(req.user._id, res, next);
 }
 
-export function createUser(req, res, next) {
+module.exports = {
+  getMe,
+};
+
+function createUser(req, res, next) {
   const {
     email,
     password,
@@ -78,7 +87,9 @@ export function createUser(req, res, next) {
     });
 }
 
-export function updateUserInfo(req, res, next) {
+module.exports = { createUser };
+
+function updateUserInfo(req, res, next) {
   const {
     name,
     about,
@@ -105,8 +116,9 @@ export function updateUserInfo(req, res, next) {
       }
     });
 }
+module.exports = { updateUserInfo };
 
-export function updateUserAvatar(req, res, next) {
+function updateUserAvatar(req, res, next) {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.user._id, { avatar }, {
     new: true,
@@ -128,7 +140,9 @@ export function updateUserAvatar(req, res, next) {
     });
 }
 
-export function login(req, res, next) {
+module.exports = { updateUserAvatar };
+
+function login(req, res, next) {
   const {
     email,
     password,
@@ -149,3 +163,5 @@ export function login(req, res, next) {
     })
     .catch((err) => next(err));
 }
+
+module.exports = { login };

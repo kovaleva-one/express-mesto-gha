@@ -1,4 +1,4 @@
-import { constants } from 'http2';
+const { constants } = require('http2');
 
 function centralizedError(err, req, res, next) {
   let {
@@ -14,4 +14,4 @@ function centralizedError(err, req, res, next) {
   next();
 }
 
-export default centralizedError;
+module.exports = centralizedError;

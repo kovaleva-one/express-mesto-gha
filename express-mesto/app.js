@@ -1,16 +1,16 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import bodyParser from 'body-parser';
-import cookieParser from 'cookie-parser';
-import { celebrate, errors, Joi } from 'celebrate';
-import usersRouter from './routes/user';
-import cardRouter from './routes/card';
-import { createUser, login } from './controllers/user';
-import auth from './middlewares/auth';
-import NotFoundError from './errors/NotFoundError';
-import centralizedError from './middlewares/centralizedError';
-import urlRegex from './utils/constants';
-import { errorLogger, requestLogger } from './middlewares/logger';
+const express = require('express');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+const { celebrate, errors, Joi } = require('celebrate');
+const usersRouter = require('./routes/user');
+const cardRouter = require('./routes/card');
+const { createUser, login } = require('./controllers/user');
+const auth = require('./middlewares/auth');
+const NotFoundError = require('./errors/NotFoundError');
+const centralizedError = require('./middlewares/centralizedError');
+const urlRegex = require('./utils/constants');
+const { errorLogger, requestLogger } = require('./middlewares/logger');
 
 const { PORT = 3000 } = process.env;
 

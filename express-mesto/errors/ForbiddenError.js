@@ -1,5 +1,5 @@
-import { constants } from 'http2';
-import HTTPError from './HTTPError';
+const { constants } = require('http2');
+const HTTPError = require('./HTTPError');
 
 class ForbiddenError extends HTTPError {
   constructor(message) {
@@ -8,4 +8,4 @@ class ForbiddenError extends HTTPError {
   }
 }
 
-export default ForbiddenError;
+module.exports = ForbiddenError;
