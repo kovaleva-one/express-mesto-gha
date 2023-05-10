@@ -1,167 +1,86 @@
-const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/user.js');
-const NotFoundError = require('../errors/NotFoundError');
-const BadRequestError = require('../errors/BadRequestError');
-const ConflictError = require('../errors/ConflictError');
+const User = require('../models/user');
+const HttpError = require('../errors/HTTPError');
 
-dotenv.config();
-
-const {
-  NODE_ENV,
-  JWT_SECRET,
-} = process.env;
-
-function getUsers(req, res, next) {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch((err) => next(err));
-}
-
-module.exports = { getUsers };
-
-function findUserById(id, res, next) {
-  User.findById(id)
-    .then((user) => {
-      if (user) {
-        res.send(user);
-      } else {
-        throw new NotFoundError(`Пользователь с указанным _id=${id} не найден.`);
-      }
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new BadRequestError(`Переданы некорректные данные: _id=${id} при запросе информации о пользователе.`));
-      } else {
-        next(err);
-      }
-    });
-}
-
-function getUserById(req, res, next) {
-  findUserById(req.params.userId, res, next);
-}
-
-module.exports = {
-  getUserById,
+    .catch(next);
 };
 
-function getMe(req, res, next) {
-  findUserById(req.user._id, res, next);
-}
-
-module.exports = {
-  getMe,
+module.exports.getUserById = (req, res, next) => {
+  User.findOne({ _id: req.params.userId })
+    .orFail(new HttpError(404, 'idError', 'Пользователь по указанному id не найден'))
+    .then((user) => res.send(user))
+    .catch(next);
 };
 
-function createUser(req, res, next) {
+module.exports.getCurrentUser = (req, res, next) => {
+  User.findById(req.user._id)
+    .orFail(new HttpError(404, 'idError', 'Пользователь по указанному id не найден'))
+    .then((user) => res.send(user))
+    .catch(next);
+};
+
+module.exports.createUser = (req, res, next) => {
   const {
-    email,
-    password,
-    name,
-    about,
-    avatar,
+    name, about, avatar, email, password,
   } = req.body;
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
-      email,
-      password: hash,
-      name,
-      about,
-      avatar,
-    }))
-    .then((user) => {
-      const userOutOfPassword = user.toObject();
-      delete userOutOfPassword.password;
-      res.send(userOutOfPassword);
+      email, password: hash, name, about, avatar,
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequestError(`Переданы некорректные данные при создании пользователя: ${Object.values(err.errors)[0].message}`));
-      } else if (err.code === 11000) {
-        next(new ConflictError('Данный email уже занят'));
-      } else {
-        next(err);
-      }
-    });
-}
+      .then((user) => res.send({
+        email: user.email,
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+      }))
+      .catch((err) => {
+        if (err.name === 'MongoServerError' && err.code === 11000) {
+          next(new HttpError(409, 'ConflictError', 'Пользоватьель с таким email уже существует'));
+        } else {
+          next(new HttpError(400, 'ValidationError', 'Переданы некорректные данные при создании пользователя'));
+        }
+      }))
+    .catch(next);
+};
 
-module.exports = { createUser };
+module.exports.updateUser = (req, res, next) => {
+  const { name, about } = req.body;
+  User.findByIdAndUpdate(
+    req.user._id,
+    { name, about },
+    {
+      new: true,
+      runValidators: true,
+      upsert: false,
+    },
+  )
+    .orFail(new HttpError(404, 'idError', 'Пользователь по указанному id не найден'))
+    .then((user) => res.send(user))
+    .catch(next);
+};
 
-function updateUserInfo(req, res, next) {
-  const {
-    name,
-    about,
-  } = req.body;
-  User.findByIdAndUpdate(req.user._id, {
-    name,
-    about,
-  }, {
-    new: true,
-    runValidators: true,
-  })
-    .then((user) => {
-      if (user) {
-        res.send(user);
-      } else {
-        throw new NotFoundError(`Пользователь c указанным _id=${req.user._id} не найден.`);
-      }
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequestError(`Переданы некорректные данные при обновлении пользователя: ${Object.values(err.errors)[0].message}`));
-      } else {
-        next(err);
-      }
-    });
-}
-module.exports = { updateUserInfo };
-
-function updateUserAvatar(req, res, next) {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.user._id, { avatar }, {
     new: true,
     runValidators: true,
+    upsert: false,
   })
-    .then((user) => {
-      if (user) {
-        res.send(user);
-      } else {
-        throw new NotFoundError(`Пользователь c указанным _id=${req.user._id} не найден.`);
-      }
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы некорректные данные при обновлении аватара.'));
-      } else {
-        next(err);
-      }
-    });
-}
+    .orFail(new HttpError(404, 'idError', 'Пользователь по указанному id не найден'))
+    .then((user) => res.send(user))
+    .catch(next);
+};
 
-module.exports = { updateUserAvatar };
-
-function login(req, res, next) {
-  const {
-    email,
-    password,
-  } = req.body;
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign(
-        { _id: user._id },
-        NODE_ENV === 'production' ? JWT_SECRET : 'super-strong-secret',
-        { expiresIn: '7d' },
-      );
-      res.cookie('jwt', token, {
-        maxAge: 3600000 * 24 * 7,
-        httpOnly: true,
-        sameSite: true,
-      });
-      res.send({ token });
+      const token = jwt.sign({ _id: user._id }, 'dev-secret', { expiresIn: '7d' });
+      res.cookie('jwt', token, { httpOnly: true }).send({ message: 'Авторизация прошла успешно' });
     })
-    .catch((err) => next(err));
-}
-
-module.exports = { login };
+    .catch(next);
+};

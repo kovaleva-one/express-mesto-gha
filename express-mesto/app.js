@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { celebrate, errors, Joi } = require('celebrate');
-const usersRouter = require('./routes/user');
+const router = require('./routes/user');
 const cardRouter = require('./routes/card');
 const { createUser, login } = require('./controllers/user');
 const auth = require('./middlewares/auth');
@@ -58,7 +58,7 @@ app.post('/signup', celebrate({
 }), createUser);
 
 app.use(auth);
-app.use('/users', usersRouter);
+app.use('/users', router);
 app.use('/cards', cardRouter);
 app.all('*', (req, res, next) => {
   next(new NotFoundError('Запрашиваемый маршрут не найден'));

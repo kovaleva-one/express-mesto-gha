@@ -1,52 +1,35 @@
-const { Router } = require('express');
+const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
+
 const {
-  createCard,
-  deleteCard,
-  dislikeCard,
-  getAllCards,
-  likeCard,
+  getCards, createCard, deleteCard, likeCard, dislikeCard,
 } = require('../controllers/card');
 
-const cardRouter = Router();
+router.get('/', getCards);
 
-cardRouter.get('/', getAllCards);
-cardRouter.delete('/:cardId', celebrate({
-  params: Joi.object({
-    cardId: Joi.string()
-      .required()
-      .hex()
-      .length(24),
+router.post('/', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    link: Joi.string().required().pattern(/^(https?:\/\/(www\.)?)[\w\-._~:/?#[\]@!$&'()*+,;]+\.[\w\-._~:/?#[\]@!$&'()*+,;]+#?$/),
+  }),
+}), createCard);
+
+router.delete('/:cardId', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().length(24).hex(),
   }),
 }), deleteCard);
-cardRouter.post('/', celebrate({
-  body: Joi.object()
-    .keys({
-      name: Joi.string()
-        .required()
-        .min(2)
-        .max(30),
-      link: Joi.string()
-        .required()
-        .regex(/^(http[s]?|ftp):\/\/?([w]{3}\.)?[a-z0-9\-.]+\.[a-z]{2,}(\/.*)?$/)
-        .uri(),
-    }),
-}), createCard);
-cardRouter.put('/:cardId/likes', celebrate({
-  params: Joi.object({
-    cardId: Joi.string()
-      .required()
-      .hex()
-      .length(24),
+
+router.put('/:cardId/likes', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().length(24).hex(),
   }),
 }), likeCard);
-cardRouter.delete('/:cardId/likes', celebrate({
-  params: Joi.object({
-    cardId: Joi.string()
-      .required()
-      .hex()
-      .length(24),
+
+router.delete('/:cardId/likes', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().length(24).hex(),
   }),
 }), dislikeCard);
 
-module.exports = cardRouter;
+module.exports = router;
