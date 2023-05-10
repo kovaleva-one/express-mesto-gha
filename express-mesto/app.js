@@ -18,6 +18,7 @@ const app = express();
 
 app.use(bodyParser.json());
 app.use(cookieParser());
+mongoose.set('strictQuery', false);
 mongoose.connect('mongodb://localhost:27017/mestodb')
   .catch((err) => {
     // eslint-disable-next-line no-console
