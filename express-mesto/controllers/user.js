@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const HttpError = require('../errors/HTTPError');
+const HTTPError = require('../errors/HTTPError');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
@@ -11,14 +11,14 @@ module.exports.getUsers = (req, res, next) => {
 
 module.exports.getUserById = (req, res, next) => {
   User.findOne({ _id: req.params.userId })
-    .orFail(new HttpError(404, 'idError', 'Пользователь по указанному id не найден'))
+    .orFail(new HTTPError(404, 'idError', 'Пользователь по указанному id не найден'))
     .then((user) => res.send(user))
     .catch(next);
 };
 
 module.exports.getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
-    .orFail(new HttpError(404, 'idError', 'Пользователь по указанному id не найден'))
+    .orFail(new HTTPError(404, 'idError', 'Пользователь по указанному id не найден'))
     .then((user) => res.send(user))
     .catch(next);
 };
@@ -39,9 +39,9 @@ module.exports.createUser = (req, res, next) => {
       }))
       .catch((err) => {
         if (err.name === 'MongoServerError' && err.code === 11000) {
-          next(new HttpError(409, 'ConflictError', 'Пользоватьель с таким email уже существует'));
+          next(new HTTPError(409, 'ConflictError', 'Пользователь с таким email уже существует'));
         } else {
-          next(new HttpError(400, 'ValidationError', 'Переданы некорректные данные при создании пользователя'));
+          next(err);
         }
       }))
     .catch(next);
@@ -58,7 +58,7 @@ module.exports.updateUser = (req, res, next) => {
       upsert: false,
     },
   )
-    .orFail(new HttpError(404, 'idError', 'Пользователь по указанному id не найден'))
+    .orFail(new HTTPError(404, 'idError', 'Пользователь по указанному id не найден'))
     .then((user) => res.send(user))
     .catch(next);
 };
@@ -70,7 +70,7 @@ module.exports.updateAvatar = (req, res, next) => {
     runValidators: true,
     upsert: false,
   })
-    .orFail(new HttpError(404, 'idError', 'Пользователь по указанному id не найден'))
+    .orFail(new HTTPError(404, 'idError', 'Пользователь по указанному id не найден'))
     .then((user) => res.send(user))
     .catch(next);
 };

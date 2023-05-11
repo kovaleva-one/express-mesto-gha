@@ -1,5 +1,5 @@
 const Card = require('../models/card');
-const HttpError = require('../errors/HTTPError');
+const HTTPError = require('../errors/HTTPError');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
@@ -17,7 +17,7 @@ module.exports.createCard = (req, res, next) => {
 
 module.exports.deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
-    .orFail(new HttpError(404, 'idError', 'Карточка по указанному id не найдена'))
+    .orFail(new HTTPError(404, 'idError', 'Карточка по указанному id не найдена'))
     .then((card) => {
       if (card.owner.toString() === req.user._id.toString()) {
         Card.findByIdAndRemove(req.params.cardId)
@@ -25,7 +25,7 @@ module.exports.deleteCard = (req, res, next) => {
           .then((delCard) => res.send(delCard))
           .catch(next);
       } else {
-        throw new HttpError(403, 'forbiddenError', 'Нет прав для удаления');
+        throw new HTTPError(403, 'forbiddenError', 'Нет прав для удаления');
       }
     })
     .catch(next);
@@ -37,7 +37,7 @@ module.exports.likeCard = (req, res, next) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .orFail(new HttpError(404, 'idError', 'Карточка по указанному id не найдена'))
+    .orFail(new HTTPError(404, 'idError', 'Карточка по указанному id не найдена'))
     .populate(['owner', 'likes'])
     .then((card) => res.send(card))
     .catch(next);
@@ -49,7 +49,7 @@ module.exports.dislikeCard = (req, res, next) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    .orFail(new HttpError(404, 'idError', 'Карточка по указанному id не найдена'))
+    .orFail(new HTTPError(404, 'idError', 'Карточка по указанному id не найдена'))
     .populate(['owner', 'likes'])
     .then((card) => res.send(card))
     .catch(next);

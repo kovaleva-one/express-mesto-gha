@@ -1,28 +1,25 @@
 const jwt = require('jsonwebtoken');
 const UnauthorizedError = require('../errors/UnauthorizedError');
 
-const {
-  NODE_ENV,
-  JWT_SECRET,
-} = process.env;
+const extractBearerToken = (header) => header.replace('Bearer ', '');
 
-function auth(req, res, next) {
-  const { cookies } = req;
+module.exports = (req, res, next) => {
+  const { authorization } = req.headers;
 
-  if (cookies && cookies.jwt) {
-    const token = cookies.jwt;
-    let payload;
-
-    try {
-      payload = jwt.verify(token, NODE_ENV === 'production' ? JWT_SECRET : 'super-strong-secret');
-    } catch (e) {
-      throw (new UnauthorizedError('Передан неверифицированый токен'));
-    }
-    req.user = payload;
-    next();
-  } else {
-    next(new UnauthorizedError('Отсутствует авторизационный заголовок или cookies'));
+  if (!authorization || !authorization.startsWith('Bearer ')) {
+    return next(new UnauthorizedError('Authorization required'));
   }
-}
 
-module.exports = auth;
+  const token = extractBearerToken(authorization);
+  let payload;
+
+  try {
+    payload = jwt.verify(token, 'secret-dev-key');
+  } catch (err) {
+    return next(new UnauthorizedError('Authorization required'));
+  }
+
+  req.user = payload;
+
+  return next();
+};
